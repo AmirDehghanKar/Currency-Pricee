@@ -4,8 +4,8 @@ import requests
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 
-BOT_TOKEN = os.getenv("8922689884:AAH7ibIBvuZNjAZIuz1HAU5Cm5m0gxBEAx8")
-CHAT_ID = os.getenv("@CurrencyPricee")
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+CHAT_ID = os.getenv("CHAT_ID", "@CurrencyPricee")
 INTERVAL_SECONDS = 15 * 60
 
 logging.basicConfig(
