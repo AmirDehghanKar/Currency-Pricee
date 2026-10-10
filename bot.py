@@ -1,9 +1,12 @@
 import os
 import logging
+from datetime import datetime
+from zoneinfo import ZoneInfo
 import requests
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 
+# ==================== تنظیمات ====================
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID", "@CurrencyPricee")
 INTERVAL_SECONDS = 15 * 60
@@ -46,21 +49,19 @@ def get_market_prices() -> dict | None:
         return None
 
 
-
 def format_price_board(prices: dict) -> str:
     def fmt(n):
         if isinstance(n, float):
             return f"{n:.4f}"
         return f"{n:,}"
 
-    # ساعت و تاریخ لحظه‌ای به وقت تهران
     now = datetime.now(ZoneInfo("Asia/Tehran"))
     time_str = now.strftime("%H:%M")
     date_str = now.strftime("%Y/%m/%d")
 
     return (
         "📊 <b>تابلو قیمت لحظه‌ای</b>\n"
-        f"🕒زمان: {time_str} - {date_str}\n"
+        f"🕒 زمان: {time_str} - {date_str}\n"
         "━━━━━━━━━━━━━━━━━━━━━━━\n\n"
         
         f"💵 <b>دلار آمریکا</b>\n"
@@ -76,7 +77,7 @@ def format_price_board(prices: dict) -> str:
         f"   {fmt(prices.get('bahar', 0))} تومان\n\n"
         
         f"⚡ <b>ترون (TRX)</b>\n"
-        f"   {fmt(prices.get('trx_usd', 0))} دلار\n\n"
+        f"   ${fmt(prices.get('trx_usd', 0))}\n\n"
         
         "━━━━━━━━━━━━━━━━━━━━━━━\n"
         "⏰ به‌روزرسانی هر ۱۵ دقیقه\n"
@@ -84,13 +85,17 @@ def format_price_board(prices: dict) -> str:
     )
 
 
-
 async def send_price(context: ContextTypes.DEFAULT_TYPE):
     prices = get_market_prices()
     if not prices:
         await context.bot.send_message(chat_id=CHAT_ID, text="⚠️ خطا در دریافت قیمت‌ها")
         return
-    await context.bot.send_message(chat_id=CHAT_ID, text=format_price_board(prices), parse_mode="HTML")
+
+    await context.bot.send_message(
+        chat_id=CHAT_ID,
+        text=format_price_board(prices),
+        parse_mode="HTML"
+    )
     logger.info(f"قیمت ارسال شد | دلار: {prices.get('usd')}")
 
 
@@ -108,14 +113,15 @@ async def price_now(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 def main():
     if not BOT_TOKEN:
-        raise ValueError("BOT_TOKEN تنظیم نشده")
+        raise ValueError("BOT_TOKEN تنظیم نشده است")
 
     app = Application.builder().token(BOT_TOKEN).build()
+
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("price", price_now))
 
     job_queue = app.job_queue
-    job_queue.run_repeating(send_price, interval=INTERVAL_SECONDS, first=15)
+    job_queue.run_repeating(send_price, interval=INTERVAL_SECONDS, first=10)
 
     logger.info("ربات شروع به کار کرد...")
     app.run_polling(drop_pending_updates=True)
