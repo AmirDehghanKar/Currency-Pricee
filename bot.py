@@ -77,7 +77,7 @@ def format_price_board(prices: dict) -> str:
         f"   {fmt(prices.get('bahar', 0))} تومان\n\n"
         
         f"⚡ <b>ترون (TRX)</b>\n"
-        f"   ${fmt(prices.get('trx_usd', 0))}\n\n"
+        f"   {fmt(prices.get('trx_usd', 0))} دلار\n\n"
         
         "━━━━━━━━━━━━━━━━━━━━━━━\n"
         "⏰ به‌روزرسانی هر ۱۵ دقیقه\n"
